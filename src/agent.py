@@ -154,7 +154,7 @@ You have access to three tools:
 Instructions:
 You must strictly follow this exact sequence of steps. Do NOT deviate. Do NOT loop.
 
-STEP 1: Call `optimize_search_query` EXACTLY ONCE to generate 5 diverse search queries.
+STEP 1: Call `optimize_search_query` EXACTLY ONCE to generate 2 diverse search queries.
 STEP 2: Call `search_web` EXACTLY ONCE with the list of optimized queries.
 STEP 3: Evaluate the results from `search_web`. 
   - If it says no new companies were found, STOP IMMEDIATELY and output your final report.

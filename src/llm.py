@@ -109,14 +109,11 @@ async def optimize_search_query(user_query: str) -> list[str]:
     PREVIOUSLY GENERATED QUERIES (DO NOT USE THESE OR ANYTHING SIMILAR):
     {previous_queries_str}
 
-Generate 5 diverse, highly optimized Google search queries that maximize the chances of finding software companies and their hiring pages. YOU MUST INVENT COMPLETELY NEW SEARCH ANGLES THAT DO NOT OVERLAP WITH THE PREVIOUSLY GENERATED QUERIES.
+Generate 2 diverse, highly optimized Google search queries that maximize the chances of finding software companies and their hiring pages. YOU MUST INVENT COMPLETELY NEW SEARCH ANGLES THAT DO NOT OVERLAP WITH THE PREVIOUSLY GENERATED QUERIES.
 
     To get a large volume of companies, create different angles for each query:
     1. Angle 1: Focus on startups and product companies.
-    2. Angle 2: Focus on software development agencies and IT services.
-    3. Angle 3: Focus on specific technology stacks (e.g., Python, React).
-    4. Angle 4: Focus on recent job postings and hiring keywords.
-    5. Angle 5: Focus on specific locations (if not provided, default to major Indian tech hubs like Bangalore, Hyderabad, Pune).
+    2. Angle 2: Focus on specific technology stacks or hiring keywords.
 
     The search should prioritize:
 
@@ -183,7 +180,7 @@ Generate 5 diverse, highly optimized Google search queries that maximize the cha
 
     Rules:
 
-    - Return exactly 5 distinct Google search queries.
+    - Return exactly 2 distinct Google search queries.
     - Do NOT explain anything.
     - Do NOT use markdown.
     - Produce queries that are concise but comprehensive.

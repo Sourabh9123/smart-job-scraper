@@ -32,7 +32,7 @@ async def main():
                 console.rule(f"[bold cyan]Batch {iteration}[/bold cyan]")
                 
                 # Force the agent to try new angles each iteration
-                agent_input = f"User Request: '{query}'.\nThis is batch {iteration}. You MUST generate COMPLETELY NEW search queries. Then search the web. Then immediately scrape up to {settings.batch_size} companies. Do NOT search more than once. Follow the 5-STEP sequence strictly."
+                agent_input = f"User Request: '{query}'.\nThis is batch {iteration}. You MUST generate 2 COMPLETELY NEW search queries. Then search the web. Then immediately scrape up to {settings.batch_size} companies. Do NOT search more than once. Follow the 5-STEP sequence strictly."
                 
                 inputs = {"messages": [HumanMessage(content=agent_input)]}
                 
