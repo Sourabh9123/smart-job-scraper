@@ -58,6 +58,10 @@ async def search_companies(query: str) -> List[Dict[str, Any]]:
                 continue
             console.print(f"[bold red]HTTP Error calling Serper API: {e}[/bold red]")
             return []
+        except httpx.RequestError as e:
+            console.print(f"[yellow]Network timeout or error: {e}. Retrying...[/yellow]")
+            await asyncio.sleep(2)
+            continue
         except Exception as e:
             console.print(f"[bold red]Error calling Serper API: {e}[/bold red]")
             return []
