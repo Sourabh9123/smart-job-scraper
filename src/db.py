@@ -48,6 +48,13 @@ class Database:
             console.print(f"[bold red]Database error for {company.company}: {e}[/bold red]")
             return False
 
+    async def domain_exists(self, domain: str) -> bool:
+        """Checks if a domain already exists in the main companies collection."""
+        if not self.collection:
+            return False
+        count = await self.collection.count_documents({"domain": domain}, limit=1)
+        return count > 0
+
     async def save_raw_scrape(self, website: str, raw_text: str) -> str | None:
         """
         Saves raw scraped text and returns the inserted document ID as a string.

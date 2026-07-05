@@ -39,22 +39,68 @@ async def search_web(queries: list[str]) -> str:
     unique_domains = set()
     aggregated_output = []
     
+    # We will use another asyncio loop to find official domains for job board links
+    company_name_resolution_tasks = []
+    
     for results in all_results:
         for r in results:
             link = r.get('link')
             title = r.get('title')
-            if not link:
+            if not link or not title:
                 continue
+                
             ext = tldextract.extract(link)
             domain = f"{ext.domain}.{ext.suffix}"
-            if domain not in unique_domains:
-                unique_domains.add(domain)
-                aggregated_output.append(f"Title: {title}\nLink: {link}")
+            
+            # Job Board Bypass Strategy
+            if ext.domain in ['linkedin', 'indeed', 'naukri', 'glassdoor', 'wellfound']:
+                # Extract potential company name from the title (e.g. "Python Developer - Acme Corp - LinkedIn")
+                # A naive but effective heuristic: pick the middle/first parts separated by - or |
+                parts = title.replace('|', '-').split('-')
+                if len(parts) > 1:
+                    # Usually the company name is in the middle or end
+                    company_name = parts[-2].strip() if len(parts) >= 2 else parts[0].strip()
+                    company_name = company_name.replace('Jobs', '').strip()
+                    if company_name and len(company_name) > 2:
+                        company_name_resolution_tasks.append((company_name, search_companies(f"{company_name} official company website")))
+            else:
+                # Official website
+                if domain not in unique_domains:
+                    unique_domains.add(domain)
+                    aggregated_output.append({"title": title, "link": link, "domain": domain})
+                    
+    # Resolve job board company names to official domains concurrently
+    if company_name_resolution_tasks:
+        console.print(f"[cyan]Action:[/cyan] Resolving {len(company_name_resolution_tasks)} companies from job boards to their official websites...")
+        resolution_results = await asyncio.gather(*[task for _, task in company_name_resolution_tasks])
+        for (company_name, _), results in zip(company_name_resolution_tasks, resolution_results):
+            if results:
+                # Take the first organic result as the official website
+                best_result = results[0]
+                link = best_result.get('link')
+                if link:
+                    ext = tldextract.extract(link)
+                    if ext.domain not in ['linkedin', 'indeed', 'glassdoor', 'naukri', 'wellfound']:
+                        domain = f"{ext.domain}.{ext.suffix}"
+                        if domain not in unique_domains:
+                            unique_domains.add(domain)
+                            aggregated_output.append({"title": f"{company_name} (Resolved from Job Board)", "link": link, "domain": domain})
+
+    # Filter out companies that are ALREADY in the database to save scraping time
+    final_output = []
+    console.print(f"[cyan]Action:[/cyan] Checking {len(aggregated_output)} domains against the database...")
+    for item in aggregated_output:
+        domain = item['domain']
+        is_existing = await db.domain_exists(domain)
+        if not is_existing:
+            final_output.append(f"Title: {item['title']}\nLink: {item['link']}")
+        else:
+            console.print(f"[dim]Skipping {domain} (already in DB)[/dim]")
     
-    if not aggregated_output:
-        return "No results found."
+    if not final_output:
+        return "No new companies found. All discovered companies are already in the database."
         
-    return "\n\n".join(aggregated_output)
+    return "\n\n".join(final_output)
 
 @tool
 async def scrape_and_extract(url: str, user_context: str) -> str:

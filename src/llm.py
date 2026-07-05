@@ -120,10 +120,14 @@ Generate 5 diverse, highly optimized Google search queries that maximize the cha
     Include search terms that help discover results from:
 
     - Official company websites and career pages
-    - Independent company domains
+    - LinkedIn Company pages
+    - LinkedIn Jobs
+    - Indeed
+    - Naukri
+    - Wellfound (AngelList)
     - "careers", "jobs", "hiring"
 
-    **CRITICAL RULE**: DO NOT use operators like `site:linkedin.com`, `site:indeed.com`, `site:naukri.com`, `site:wellfound.com`, or `site:glassdoor.com`. Our scraping tool gets blocked by these platforms. The query MUST be designed to find independent, official company websites.
+    You can use operators like `site:linkedin.com`, `site:indeed.com`, `site:naukri.com`, `site:wellfound.com`, or `site:glassdoor.com`. Our tool is smart enough to extract company names from job boards and find their official websites automatically!
 
     If the user does NOT specify a location, automatically optimize for India by including relevant hiring locations such as:
 
