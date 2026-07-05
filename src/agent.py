@@ -83,4 +83,4 @@ Instructions:
 5. Finally, summarize all your findings and the companies you successfully processed in a clear, concise markdown report for the user. Mention the emails and jobs found. Do not invent data.
 """
 
-agent = create_react_agent(llm, tools, state_modifier=system_prompt)
+agent = create_react_agent(llm, tools, prompt=system_prompt)
