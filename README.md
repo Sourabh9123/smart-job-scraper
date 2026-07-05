@@ -77,6 +77,17 @@ python -m src.main
 7. 🤖 **Final Report**: The agent streams a final Markdown summary directly to your terminal.
 8. You are prompted to export all the detailed data currently in your DB to a CSV file.
 
+### 💡 Example Prompts to Maximize Cold Email Leads
+
+The AI generates 5 diverse search strategies based on your input. Try these to get the best results:
+
+- **For High Volume:** 
+  > *"Find me a massive list of software companies, IT services, and product startups in India that are actively hiring developers right now. Focus on extracting their contact emails."*
+- **For Specific Tech Stacks:** 
+  > *"Find me modern software companies and startups in Bangalore or remote that are currently hiring Python, Django, or FastAPI developers."*
+- **For High-Quality Startups:** 
+  > *"Find me Y-Combinator startups, early-stage SaaS companies, and AI product companies in India that are expanding their engineering teams."*
+
 ## 🐳 Docker Support
 
 Run the entire application in a containerized environment:
