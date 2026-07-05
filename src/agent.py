@@ -54,15 +54,13 @@ async def search_web(queries: list[str]) -> str:
             
             # Job Board Bypass Strategy
             if ext.domain in ['linkedin', 'indeed', 'naukri', 'glassdoor', 'wellfound']:
-                # Extract potential company name from the title (e.g. "Python Developer - Acme Corp - LinkedIn")
-                # A naive but effective heuristic: pick the middle/first parts separated by - or |
+                # Extract potential company name from the title
                 parts = title.replace('|', '-').split('-')
                 if len(parts) > 1:
-                    # Usually the company name is in the middle or end
                     company_name = parts[-2].strip() if len(parts) >= 2 else parts[0].strip()
                     company_name = company_name.replace('Jobs', '').strip()
                     if company_name and len(company_name) > 2:
-                        company_name_resolution_tasks.append((company_name, search_companies(f"{company_name} official company website")))
+                        company_name_resolution_tasks.append((company_name, f"{company_name} official company website"))
             else:
                 # Official website
                 if domain not in unique_domains:
@@ -75,7 +73,9 @@ async def search_web(queries: list[str]) -> str:
         company_name_resolution_tasks = company_name_resolution_tasks[:20]
         
         console.print(f"[cyan]Action:[/cyan] Resolving {len(company_name_resolution_tasks)} companies from job boards to their official websites...")
-        resolution_results = await asyncio.gather(*[task for _, task in company_name_resolution_tasks])
+        
+        # Create the coroutines AFTER slicing so we don't leave any unawaited coroutines
+        resolution_results = await asyncio.gather(*[search_companies(query) for _, query in company_name_resolution_tasks])
         for (company_name, _), results in zip(company_name_resolution_tasks, resolution_results):
             if results:
                 # Take the first organic result as the official website
