@@ -101,7 +101,7 @@ async def search_web(queries: list[str]) -> str:
             console.print(f"[dim]Skipping {domain} (already in DB)[/dim]")
     
     if not final_output:
-        return "No new companies found. All discovered companies are already in the database."
+        return "CRITICAL INSTRUCTION: No new companies found. All discovered companies are already in the database. YOU MUST STOP NOW and output your final report. DO NOT CALL ANY MORE TOOLS."
         
     return "\n\n".join(final_output)
 
@@ -155,8 +155,9 @@ Instructions:
 1. When the user gives you a request, first call `optimize_search_query` to generate a list of 5 diverse search queries.
 2. Take the list of optimized queries and call `search_web` to aggregate a massive list of unique companies.
 3. Look at the search results. Identify the best matching links. **CRITICAL**: ONLY select official company websites or direct company career pages (e.g. company.com/careers). DO NOT try to scrape LinkedIn, Indeed, Glassdoor, Naukri, or Wellfound as they block automated scrapers.
-4. Call `scrape_and_extract` on up to 5 of the most promising official company URLs. You MUST do this immediately after getting search results. Do NOT perform any additional searches in the same run. You can call this tool multiple times in parallel for different URLs.
-5. Finally, summarize all your findings and the companies you successfully processed in a clear, concise markdown report for the user. Mention the emails and jobs found. Do not invent data.
+4. Call `scrape_and_extract` on up to 5 of the most promising official company URLs. You MUST do this immediately after getting search results. 
+5. **CRITICAL**: If `search_web` or `scrape_and_extract` fails, returns no results, or says companies are already in the database, you MUST STOP and output your final report immediately. Do NOT perform any additional searches or try to recover. Do NOT loop back.
+6. Finally, summarize all your findings and the companies you successfully processed in a clear, concise markdown report for the user. Mention the emails and jobs found. Do not invent data.
 """
 
 agent = create_react_agent(llm, tools, prompt=system_prompt)
