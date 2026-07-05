@@ -18,6 +18,17 @@ async def search_web(queries: list[str]) -> str:
     Search the web for software companies based on a list of highly optimized queries.
     Returns a combined JSON string of unique search results containing titles and links.
     """
+    if isinstance(queries, str):
+        try:
+            import ast
+            parsed = ast.literal_eval(queries)
+            if isinstance(parsed, list):
+                queries = parsed
+            else:
+                queries = [queries]
+        except (ValueError, SyntaxError):
+            queries = [queries]
+            
     console.print(f"[cyan]Action:[/cyan] Running {len(queries)} diverse web searches to maximize results...")
     
     tasks = [search_companies(q) for q in queries]

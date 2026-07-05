@@ -86,7 +86,7 @@ async def extract_company_info(text: str, website: str) -> CompanyInfo | None:
     return final_info
 
 @tool
-async def optimize_search_query(user_query: str) -> str:
+async def optimize_search_query(user_query: str) -> list[str]:
     """
     Uses OpenAI API to convert a user's natural language request into a highly optimized 
     Google Search query (Dork) to find company websites and job listings.
