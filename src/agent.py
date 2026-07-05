@@ -13,21 +13,36 @@ import tldextract
 console = Console()
 
 @tool
-async def search_web(query: str) -> str:
+async def search_web(queries: list[str]) -> str:
     """
-    Search the web for software companies based on a highly optimized query.
-    Returns a JSON string of search results containing titles and links.
+    Search the web for software companies based on a list of highly optimized queries.
+    Returns a combined JSON string of unique search results containing titles and links.
     """
-    console.print(f"[cyan]Action:[/cyan] Searching web for: {query}")
-    results = await search_companies(query)
+    console.print(f"[cyan]Action:[/cyan] Running {len(queries)} diverse web searches to maximize results...")
     
-    if not results:
+    tasks = [search_companies(q) for q in queries]
+    all_results = await asyncio.gather(*tasks)
+    
+    # Flatten and deduplicate by domain
+    unique_domains = set()
+    aggregated_output = []
+    
+    for results in all_results:
+        for r in results:
+            link = r.get('link')
+            title = r.get('title')
+            if not link:
+                continue
+            ext = tldextract.extract(link)
+            domain = f"{ext.domain}.{ext.suffix}"
+            if domain not in unique_domains:
+                unique_domains.add(domain)
+                aggregated_output.append(f"Title: {title}\nLink: {link}")
+    
+    if not aggregated_output:
         return "No results found."
         
-    output = []
-    for r in results[:15]: # Limit to top 15
-        output.append(f"Title: {r.get('title')}\nLink: {r.get('link')}")
-    return "\n\n".join(output)
+    return "\n\n".join(aggregated_output)
 
 @tool
 async def scrape_and_extract(url: str, user_context: str) -> str:
@@ -76,10 +91,10 @@ You have access to three tools:
 3. `scrape_and_extract`: Takes a URL from the search results and the original user context, scrapes the page, extracts structured data, saves it to the database, and returns a summary.
 
 Instructions:
-1. When the user gives you a request, first call `optimize_search_query`.
-2. Take the optimized query and call `search_web`.
+1. When the user gives you a request, first call `optimize_search_query` to generate a list of 5 diverse search queries.
+2. Take the list of optimized queries and call `search_web` to aggregate a massive list of unique companies.
 3. Look at the search results. Identify the best matching links. **CRITICAL**: ONLY select official company websites or direct company career pages (e.g. company.com/careers). DO NOT try to scrape LinkedIn, Indeed, Glassdoor, Naukri, or Wellfound as they block automated scrapers.
-4. Call `scrape_and_extract` on the 3-5 most promising official company URLs. You can call this tool multiple times in parallel for different URLs.
+4. Call `scrape_and_extract` on the 10 most promising official company URLs to maximize the amount of cold email prospects. You can call this tool multiple times in parallel for different URLs.
 5. Finally, summarize all your findings and the companies you successfully processed in a clear, concise markdown report for the user. Mention the emails and jobs found. Do not invent data.
 """
 

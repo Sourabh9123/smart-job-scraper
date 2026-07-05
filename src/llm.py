@@ -97,7 +97,14 @@ async def optimize_search_query(user_query: str) -> str:
     User Request:
     "{user_query}"
 
-    Generate ONE highly optimized Google search query that maximizes the chances of finding software companies and their hiring pages.
+Generate 5 diverse, highly optimized Google search queries that maximize the chances of finding software companies and their hiring pages.
+
+    To get a large volume of companies, create different angles for each query:
+    1. Angle 1: Focus on startups and product companies.
+    2. Angle 2: Focus on software development agencies and IT services.
+    3. Angle 3: Focus on specific technology stacks (e.g., Python, React).
+    4. Angle 4: Focus on recent job postings and hiring keywords.
+    5. Angle 5: Focus on specific locations (if not provided, default to major Indian tech hubs like Bangalore, Hyderabad, Pune).
 
     The search should prioritize:
 
@@ -160,11 +167,11 @@ async def optimize_search_query(user_query: str) -> str:
 
     Rules:
 
-    - Return ONLY the Google search query.
+    - Return exactly 5 distinct Google search queries.
     - Do NOT explain anything.
     - Do NOT use markdown.
-    - Produce a query that is concise but comprehensive.
-    - Optimize for discovering the maximum number of relevant companies and active job opportunities.
+    - Produce queries that are concise but comprehensive.
+    - Optimize for discovering the maximum number of unique, relevant companies and active job opportunities.
     """
         
     try:
@@ -178,8 +185,8 @@ async def optimize_search_query(user_query: str) -> str:
             temperature=0.3
         )
         
-        return completion.choices[0].message.parsed.optimized_query
+        return completion.choices[0].message.parsed.optimized_queries
         
     except Exception as e:
         console.print(f"[bold red]Error optimizing search query: {e}[/bold red]")
-        return user_query
+        return [user_query]

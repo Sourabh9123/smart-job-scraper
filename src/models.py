@@ -3,7 +3,7 @@ from typing import List, Optional
 from datetime import datetime, timezone
 
 class SearchQueryOptimization(BaseModel):
-    optimized_query: str = Field(description="The optimized Google search query string designed to find companies hiring")
+    optimized_queries: List[str] = Field(description="A list of 3-5 diverse, highly optimized Google search query strings designed to maximize the number of unique companies found.")
 
 
 class CompanyInfo(BaseModel):
