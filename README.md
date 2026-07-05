@@ -1,34 +1,38 @@
-# Hiring Radar AI 🎯
+# Smart Job Scraper 🎯 (Agentic Edition)
 
-A powerful asynchronous Python CLI application designed to automate the discovery and analysis of software companies and hiring trends. It searches the web, intelligently scrapes target websites and job portals, and leverages OpenAI-compatible LLMs (like Gemini) to extract structured hiring data, contact emails, and tech stacks.
+A powerful, autonomous Python CLI application designed to automate the discovery and analysis of software companies and hiring trends. Powered by a **LangGraph** AI agent, it intelligently crafts Google Dork queries, searches the web, decides which target websites and job portals to scrape, and leverages OpenAI-compatible LLMs (like Gemini or GPT-4o) to extract structured hiring data, contact emails, and tech stacks.
 
 ## 🚀 Features
 
-- **Intelligent Discovery**: Uses the Serper API to find relevant companies based on custom search queries.
-- **Smart Scraping Engine**: Asynchronously crawls corporate websites and seamlessly handles major job platforms (LinkedIn, Indeed, Naukri, Glassdoor) without breaking their specific URLs.
+- **Autonomous Agentic Workflow**: Built with **LangGraph** and **LangChain**. The AI agent determines the optimal strategy to find companies based on your natural language prompt.
+- **Smart Query Optimization**: The agent automatically converts your request into a highly optimized Google Dork query for the Serper API.
+- **Dynamic Scraping Engine**: Asynchronously crawls corporate websites and seamlessly handles major job platforms (LinkedIn, Indeed, Naukri, Glassdoor). The agent filters out generic sites and selectively crawls the most promising URLs.
 - **AI-Powered Data Extraction**: Utilizes LLMs with Structured Outputs (Pydantic) to accurately extract rich metadata including:
   - Tech stacks and tools
   - Open positions and job counts
   - Remote work policies
   - **Career & Contact Emails** (Perfect for outreach!)
-- **Robust Storage**: Upserts extracted data into MongoDB to prevent duplicates and track crawl history.
-- **Beautiful CLI**: Features a stunning, interactive terminal UI with live progress bars and formatted tables using `Rich`.
+- **Robust Storage & Raw Caching**: 
+  - Upserts extracted structured data into a MongoDB `companies` collection.
+  - Caches the complete HTML/Text in a `raw_scrapes` collection linked via `source_id`, enabling future re-processing without hitting the website again.
+- **Beautiful CLI & Agent Streaming**: Features a stunning, interactive terminal UI using `Rich`. Watch the AI agent's "thought process" and tool calls stream live in your terminal!
 - **Easy Export**: One-click export of all structured data and emails into a clean CSV format.
 
 ## 🛠️ Tech Stack
 
 - **Language**: Python 3.12+
+- **Agent Framework**: `langgraph`, `langchain-openai`, `langchain-core`
 - **Network**: `httpx` (async HTTP client) & `bs4` (HTML parsing)
-- **AI/Extraction**: `openai` (Python SDK for LLM integration) & `pydantic` (Data schemas)
+- **AI/Extraction**: `openai` (Python SDK) & `pydantic` (Data schemas)
 - **Database**: `motor` (Async MongoDB driver)
-- **UI**: `rich` & `rich-cli` (Terminal styling)
+- **UI**: `rich` (Terminal styling)
 - **Deployment**: Docker & Docker Compose
 
 ## 📋 Setup & Installation
 
 ### 1. Clone the repository
 ```bash
-git clone https://github.com/yourusername/smart-job-scraper.git
+git clone git@github.com:Sourabh9123/smart-job-scraper.git
 cd smart-job-scraper
 ```
 
@@ -46,7 +50,7 @@ Copy the `.env.example` file to create your own `.env`:
 cp .env.example .env
 ```
 Fill in your API keys in the `.env` file:
-- `OPENAI_API_KEY`: Your LLM API key (OpenAI or Gemini 3.1 Pro via OpenAI-compatible endpoints)
+- `OPENAI_API_KEY`: Your LLM API key (OpenAI or Gemini via OpenAI-compatible endpoints)
 - `SERPER_API_KEY`: Your search API key from [Serper.dev](https://serper.dev/)
 
 ### 4. Database Setup
@@ -57,20 +61,21 @@ docker-compose up -d mongodb
 
 ## 💻 Usage
 
-Start the CLI application:
+Start the agentic CLI application:
 ```bash
 python -m src.main
 ```
 *Alternatively, if you're using Make: `make run`*
 
 **Workflow:**
-1. You will be prompted to enter a search query (e.g., `"Python development companies in Berlin hiring"`).
-2. The tool fetches Google search results via Serper.
-3. It concurrently crawls the identified websites and job platform profiles.
-4. The LLM processes the scraped text to extract structured insights and contact emails.
-5. Results are securely saved to MongoDB.
-6. A summary table is presented in the terminal.
-7. You are prompted to export the detailed data to a CSV file.
+1. You will be prompted to enter a natural language search query (e.g., `"Find me Python development companies in Berlin actively hiring"`).
+2. The LangGraph agent intercepts your prompt and formulates a strategy.
+3. 🤖 **Tool Call (`optimize_search_query`)**: The agent generates an optimized Google Dork.
+4. 🤖 **Tool Call (`search_web`)**: The agent fetches Google search results via Serper.
+5. 🤖 **Tool Call (`scrape_and_extract`)**: The agent selectively crawls the identified websites and job platform profiles in parallel.
+6. The LLM processes the scraped text to extract structured insights and contact emails, saving everything to MongoDB.
+7. 🤖 **Final Report**: The agent streams a final Markdown summary directly to your terminal.
+8. You are prompted to export all the detailed data currently in your DB to a CSV file.
 
 ## 🐳 Docker Support
 
