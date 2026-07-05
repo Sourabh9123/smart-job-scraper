@@ -239,10 +239,13 @@ async def pivot_search_query(current_query: str, original_query: str) -> str:
     We have exhausted this current strategy and are hitting database duplicates.
     You MUST completely rewrite the strategy to cast a wider net while still respecting the spirit of the original request.
     
-    Ideas to pivot:
+    CRITICAL RULE:
+    - You MUST KEEP the exact same geographic location (city/region/country) requested by the user. Do NOT change the location! If they asked for Kolkata, it must stay Kolkata.
+    
+    Ideas to pivot (while keeping location the same):
     - Shift to adjacent tech stacks (e.g. from React to Vue/Angular, Python to Go/Node).
-    - Target completely different cities/regions (if they asked for India, try specific tier-2 cities, or explicitly 'Remote Asia').
     - Change the company archetype (e.g. from 'Startups' to 'Enterprise SaaS', 'Web3', or 'B2B Services').
+    - Target a different niche or sub-industry (e.g. HealthTech, EdTech, Fintech).
     
     Return ONLY the new, natural language request. Do NOT include quotes, explanations, or search operators.
     Example output: Find enterprise health-tech companies in Pune hiring backend developers.
