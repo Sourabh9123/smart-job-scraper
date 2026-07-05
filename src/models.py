@@ -23,3 +23,4 @@ class CompanyInfo(BaseModel):
 class CompanyDocument(CompanyInfo):
     last_crawled: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     search_query: str
+    source_id: Optional[str] = Field(description="ID of the raw scrape document", default=None)

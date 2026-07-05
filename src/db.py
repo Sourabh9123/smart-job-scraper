@@ -12,6 +12,7 @@ class Database:
         self.client = AsyncIOMotorClient(settings.mongodb_uri)
         self.db = self.client[settings.mongodb_db_name]
         self.collection = self.db.companies
+        self.raw_collection = self.db.raw_scrapes
 
     async def init_db(self):
         # Create a unique index on the domain
@@ -42,5 +43,21 @@ class Database:
         except Exception as e:
             console.print(f"[bold red]Database error for {company.company}: {e}[/bold red]")
             return False
+
+    async def save_raw_scrape(self, website: str, raw_text: str) -> str | None:
+        """
+        Saves raw scraped text and returns the inserted document ID as a string.
+        """
+        doc = {
+            "website": website,
+            "raw_text": raw_text,
+            "scraped_at": datetime.now(timezone.utc)
+        }
+        try:
+            result = await self.raw_collection.insert_one(doc)
+            return str(result.inserted_id)
+        except Exception as e:
+            console.print(f"[bold red]Database error saving raw scrape for {website}: {e}[/bold red]")
+            return None
 
 db = Database()

@@ -47,6 +47,9 @@ async def process_company(result: dict, query: str, progress: Progress, task_id)
         progress.update(task_id, advance=1)
         return None
         
+    # Save raw scrape data and get its ID
+    source_id = await db.save_raw_scrape(website, scraped_text)
+        
     progress.update(task_id, description=f"[magenta]Analyzing {ext.domain}...[/magenta]")
     
     # Extract via LLM
@@ -59,7 +62,8 @@ async def process_company(result: dict, query: str, progress: Progress, task_id)
     # Build Document
     doc = CompanyDocument(
         **company_info.model_dump(),
-        search_query=query
+        search_query=query,
+        source_id=source_id
     )
     
     # Save to DB
