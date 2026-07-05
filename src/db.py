@@ -3,6 +3,7 @@ from src.config import settings
 from src.models import CompanyDocument
 from rich.console import Console
 from datetime import datetime, timezone
+from bson import ObjectId
 import tldextract
 
 console = Console()
@@ -33,6 +34,9 @@ class Database:
         doc['domain'] = domain
         doc['last_crawled'] = datetime.now(timezone.utc)
         
+        if doc.get('source_id'):
+            doc['source_id'] = ObjectId(doc['source_id'])
+            
         try:
             await self.collection.update_one(
                 {"domain": domain},
