@@ -121,7 +121,7 @@ async def scrape_and_extract(url: str, user_context: str) -> str:
     
     if not scraped_text:
         doc = CompanyDocument(
-            company=None,
+            company=ext.domain.capitalize(),
             website=url,
             description="Failed to scrape text (Anti-bot or timeout)",
             search_query=user_context
@@ -134,7 +134,7 @@ async def scrape_and_extract(url: str, user_context: str) -> str:
     
     if not company_info:
         doc = CompanyDocument(
-            company=None,
+            company=ext.domain.capitalize(),
             website=url,
             description="Failed to extract structured data via LLM",
             search_query=user_context,
