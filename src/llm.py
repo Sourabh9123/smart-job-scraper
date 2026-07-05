@@ -94,11 +94,23 @@ async def optimize_search_query(user_query: str) -> list[str]:
     Google Search query (Dork) to find company websites and job listings.
     """
     global _previously_generated_queries
+    import random
     
     # Format the previous queries nicely if any exist
     previous_queries_str = "None"
     if _previously_generated_queries:
-        previous_queries_str = "\n".join(f"- {q}" for q in _previously_generated_queries)
+        previous_queries_str = "\n".join(f"- {q}" for q in list(_previously_generated_queries)[-20:]) # Only show last 20 to save tokens
+
+    strategies = [
+        "Focus exclusively on specific sub-industries (e.g. Fintech, Edtech, Medtech, AI, Web3).",
+        "Focus on Tier-2 or Tier-3 cities instead of major tech hubs.",
+        "Do NOT use site:linkedin.com or major job boards. Use negative operators (-linkedin -indeed -glassdoor) and look for organic 'careers' pages.",
+        "Focus on obscure or senior job titles (e.g. 'Lead Architect', 'Backend Artisan', 'Staff Engineer').",
+        "Focus on highly specific exact-match technology combinations (e.g. 'FastAPI + Celery + Redis', 'Django REST Framework + PostgreSQL').",
+        "Target startup accelerators or funding rounds (e.g. 'Y Combinator', 'Series A', 'Seed funded').",
+        "Use advanced operators like `intitle:'careers'` or `inurl:'jobs'` combined with niche keywords."
+    ]
+    random_strategy = random.choice(strategies)
 
     prompt = f"""
     You are an expert Google search query optimizer specializing in discovering companies that are actively hiring.
@@ -106,10 +118,14 @@ async def optimize_search_query(user_query: str) -> list[str]:
     User Request:
     "{user_query}"
     
-    PREVIOUSLY GENERATED QUERIES (DO NOT USE THESE OR ANYTHING SIMILAR):
+    PREVIOUSLY GENERATED QUERIES (DO NOT USE THESE, AND DO NOT JUST SHUFFLE THE WORDS):
     {previous_queries_str}
 
-Generate 2 diverse, highly optimized Google search queries that maximize the chances of finding software companies and their hiring pages. YOU MUST INVENT COMPLETELY NEW SEARCH ANGLES THAT DO NOT OVERLAP WITH THE PREVIOUSLY GENERATED QUERIES.
+    CRITICAL STRATEGY FOR THIS BATCH:
+    >>> {random_strategy} <<<
+    
+    You are currently stuck generating the exact same queries by just shuffling words around. Google ignores word order, so this wastes searches!
+    To break the loop, you MUST strictly apply the CRITICAL STRATEGY above to invent 2 COMPLETELY NOVEL Google search queries.
 
     To get a large volume of companies, create different angles for each query:
     1. Angle 1: Focus on startups and product companies.
