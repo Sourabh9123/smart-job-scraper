@@ -112,15 +112,11 @@ async def optimize_search_query(user_query: str) -> str:
 
     Include search terms that help discover results from:
 
-    - Official company websites
-    - LinkedIn Company
-    - LinkedIn Jobs
-    - Indeed
-    - Naukri
-    - Wellfound (AngelList)
-    - Glassdoor
-    - Y Combinator startups (when relevant)
-    - Remote job boards (when relevant)
+    - Official company websites and career pages
+    - Independent company domains
+    - "careers", "jobs", "hiring"
+
+    **CRITICAL RULE**: DO NOT use operators like `site:linkedin.com`, `site:indeed.com`, `site:naukri.com`, `site:wellfound.com`, or `site:glassdoor.com`. Our scraping tool gets blocked by these platforms. The query MUST be designed to find independent, official company websites.
 
     If the user does NOT specify a location, automatically optimize for India by including relevant hiring locations such as:
 
@@ -158,15 +154,9 @@ async def optimize_search_query(user_query: str) -> str:
     apply
 
     Use advanced Google search operators whenever beneficial, including:
-
-    site:linkedin.com/company
-    site:linkedin.com/jobs
-    site:indeed.com
-    site:naukri.com
-    site:wellfound.com
-    site:glassdoor.com
-    site:careers
-    OR
+    - inurl:careers
+    - intitle:hiring
+    - OR
 
     Rules:
 

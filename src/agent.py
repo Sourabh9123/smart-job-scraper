@@ -37,8 +37,8 @@ async def scrape_and_extract(url: str, user_context: str) -> str:
     Returns a summary of the extracted company information.
     """
     ext = tldextract.extract(url)
-    if ext.domain in ['facebook', 'twitter', 'instagram', 'tiktok', 'youtube']:
-        return f"Skipped generic social media URL: {url}"
+    if ext.domain in ['facebook', 'twitter', 'instagram', 'tiktok', 'youtube', 'linkedin', 'indeed', 'glassdoor', 'naukri', 'wellfound']:
+        return f"Skipped scraping {ext.domain} due to strong anti-bot protections. Please try scraping an official company website instead."
 
     console.print(f"[magenta]Action:[/magenta] Scraping and extracting: {url}")
     scraped_text = await scraper.crawl_company(url)
@@ -78,8 +78,8 @@ You have access to three tools:
 Instructions:
 1. When the user gives you a request, first call `optimize_search_query`.
 2. Take the optimized query and call `search_web`.
-3. Look at the search results. Identify the best matching links (e.g., official company websites, LinkedIn jobs, Indeed links). Ignore generic irrelevant links.
-4. Call `scrape_and_extract` on the 3-5 most promising URLs. You can call this tool multiple times in parallel for different URLs.
+3. Look at the search results. Identify the best matching links. **CRITICAL**: ONLY select official company websites or direct company career pages (e.g. company.com/careers). DO NOT try to scrape LinkedIn, Indeed, Glassdoor, Naukri, or Wellfound as they block automated scrapers.
+4. Call `scrape_and_extract` on the 3-5 most promising official company URLs. You can call this tool multiple times in parallel for different URLs.
 5. Finally, summarize all your findings and the companies you successfully processed in a clear, concise markdown report for the user. Mention the emails and jobs found. Do not invent data.
 """
 
