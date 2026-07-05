@@ -2,7 +2,7 @@ import asyncio
 from openai import AsyncOpenAI
 from langchain_core.tools import tool
 from src.config import settings
-from src.models import CompanyInfo, SearchQueryOptimization
+from src.models import CompanyInfo
 from rich.console import Console
 
 console = Console()
@@ -113,7 +113,7 @@ async def optimize_search_query(user_query: str) -> list[str]:
     random_strategy = random.choice(strategies)
 
     prompt = f"""
-    You are an expert Google search query optimizer specializing in discovering companies that are actively hiring.
+    You are a search query string generator optimized for the Serper.dev API. Your task is to output highly optimized Google Search queries (Dorks).
 
     User Request:
     "{user_query}"
@@ -125,43 +125,40 @@ async def optimize_search_query(user_query: str) -> list[str]:
     >>> {random_strategy} <<<
     
     You are currently stuck generating the exact same queries by just shuffling words around. Google ignores word order, so this wastes searches!
-    To break the loop, you MUST strictly apply the CRITICAL STRATEGY above to invent 2 COMPLETELY NOVEL Google search queries.
+    To break the loop, you MUST strictly apply the CRITICAL STRATEGY above to invent 1 COMPLETELY NOVEL Google search query.
 
     CRITICAL GEOGRAPHY RULE:
     - You MUST KEEP the exact same geographic location (city/region/country) requested by the user. 
-    - If the user explicitly asks for "Kolkata" or "Sector V", your Google queries MUST contain those exact locations! Do not change the city!
+    - If the user explicitly asks for "Kolkata" or "Sector V", your Google query MUST contain those exact locations! Do not change the city!
 
-    To get a large volume of companies, create different angles for each query:
-    1. Angle 1: Focus on startups and product companies.
-    2. Angle 2: Focus on specific technology stacks or hiring keywords.
+    You can use operators like `site:linkedin.com`, `site:indeed.com`, `site:naukri.com`, `site:wellfound.com`, or `site:glassdoor.com`. 
 
-    You can use operators like `site:linkedin.com`, `site:indeed.com`, `site:naukri.com`, `site:wellfound.com`, or `site:glassdoor.com`. Our tool is smart enough to extract company names from job boards and find their official websites automatically!
-
-    Rules:
-    - Return exactly 2 distinct Google search queries.
-    - Do NOT explain anything.
-    - Do NOT use markdown.
-    - Produce queries that are concise but comprehensive.
-    - Optimize for discovering the maximum number of unique, relevant companies and active job opportunities.
+    You must follow these formatting rules to prevent Serper HTTP 400 Bad Request errors:
+    1. OUTPUT ONLY ONE SEARCH QUERY AT A TIME as plain text. Do not use brackets [], commas, or lists.
+    2. KEEP IT ON A SINGLE LINE. Absolute no line breaks, enters, or hidden (\\n) characters.
+    3. NEVER USE PLUS SIGNS (+). Change "React + Node.js" to "React Node.js".
+    4. Do NOT explain anything.
+    5. Do NOT use markdown or surrounding quotes.
+    
+    GOOD Query Example: Kolkata Sector V tech startups React Node.js site:linkedin.com
+    BAD Query Example: ["Kolkata startups React + Node \\n site:naukri.com"]
     """
     try:
-        completion = await client.beta.chat.completions.parse(
+        completion = await client.chat.completions.create(
             model=settings.openai_model,
             messages=[
-                {"role": "system", "content": "You are an expert SEO and Google Dork specialist."},
+                {"role": "system", "content": "You are a search query string generator optimized for the Serper.dev API."},
                 {"role": "user", "content": prompt},
             ],
-            response_format=SearchQueryOptimization,
             temperature=0.3
         )
         
-        queries = completion.choices[0].message.parsed.optimized_queries
+        query_str = completion.choices[0].message.content.strip(' "\'[]\n')
         
         # Save them to the persistent global state
-        for q in queries:
-            _previously_generated_queries.add(q)
+        _previously_generated_queries.add(query_str)
             
-        return queries
+        return [query_str]
         
     except Exception as e:
         console.print(f"[bold red]Error optimizing search query: {e}[/bold red]")
