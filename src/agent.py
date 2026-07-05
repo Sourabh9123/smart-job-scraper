@@ -155,7 +155,7 @@ Instructions:
 1. When the user gives you a request, first call `optimize_search_query` to generate a list of 5 diverse search queries.
 2. Take the list of optimized queries and call `search_web` to aggregate a massive list of unique companies.
 3. Look at the search results. Identify the best matching links. **CRITICAL**: ONLY select official company websites or direct company career pages (e.g. company.com/careers). DO NOT try to scrape LinkedIn, Indeed, Glassdoor, Naukri, or Wellfound as they block automated scrapers.
-4. Call `scrape_and_extract` on the 10 most promising official company URLs to maximize the amount of cold email prospects. You can call this tool multiple times in parallel for different URLs.
+4. Call `scrape_and_extract` on up to 5 of the most promising official company URLs. You MUST do this immediately after getting search results. Do NOT perform any additional searches in the same run. You can call this tool multiple times in parallel for different URLs.
 5. Finally, summarize all your findings and the companies you successfully processed in a clear, concise markdown report for the user. Mention the emails and jobs found. Do not invent data.
 """
 
