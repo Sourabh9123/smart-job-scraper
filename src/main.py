@@ -31,21 +31,27 @@ async def main():
                 console.rule(f"[bold cyan]Batch {iteration}[/bold cyan]")
                 
                 # Force the agent to try new angles each iteration
-                agent_input = f"Find companies for this request: '{query}'. This is batch {iteration}. Generate 5 COMPLETELY NEW AND DIFFERENT search queries that you haven't tried yet. Focus on different sub-niches, different cities, or different keywords to find fresh companies. Then search and immediately scrape up to 5 best official company websites. If no new companies are found or if they are already in the DB, STOP immediately and output your report. Do not loop back to search again."
+                agent_input = f"Find companies for this request: '{query}'. This is batch {iteration}. Generate 5 COMPLETELY NEW AND DIFFERENT search queries that you haven't tried yet. Focus on different sub-niches, different cities, or different keywords to find fresh companies. Then search and immediately scrape up to {settings.batch_size} best official company websites. If no new companies are found or if they are already in the DB, STOP immediately and output your report. Do not loop back to search again."
                 
                 inputs = {"messages": [HumanMessage(content=agent_input)]}
                 
-                # Stream the agent's actions
-                async for event in agent.astream(inputs, stream_mode="values"):
-                    message = event["messages"][-1]
-                    if message.type == "ai":
-                        if message.tool_calls:
-                            for tool_call in message.tool_calls:
-                                console.print(f"[cyan]🤖 Agent decides to call tool: {tool_call['name']}[/cyan]")
-                        elif message.content:
-                            console.print(f"\n[bold magenta]🤖 Agent Final Report for Batch {iteration}:[/bold magenta]\n{message.content}")
-                    elif message.type == "tool":
-                        console.print(f"[green]✅ Tool {message.name} returned results.[/green]")
+                try:
+                    # Stream the agent's actions
+                    async for event in agent.astream(inputs, stream_mode="values"):
+                        message = event["messages"][-1]
+                        if message.type == "ai":
+                            if message.tool_calls:
+                                for tool_call in message.tool_calls:
+                                    console.print(f"[cyan]🤖 Agent decides to call tool: {tool_call['name']}[/cyan]")
+                            elif message.content:
+                                console.print(f"\n[bold magenta]🤖 Agent Final Report for Batch {iteration}:[/bold magenta]\n{message.content}")
+                        elif message.type == "tool":
+                            console.print(f"[green]✅ Tool {message.name} returned results.[/green]")
+                except Exception as e:
+                    if "GraphRecursionError" in str(type(e)) or "Recursion limit" in str(e):
+                        console.print("[yellow]Agent reached maximum steps (stubborn loop detected). Safely terminating this batch and moving to the next one![/yellow]")
+                    else:
+                        console.print(f"[red]Error during agent execution: {e}[/red]")
                         
                 iteration += 1
                 console.print(f"\n[dim]Batch {iteration-1} complete. Automatically starting next batch...[/dim]\n")

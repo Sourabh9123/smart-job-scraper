@@ -6,6 +6,7 @@ class Settings(BaseSettings):
     openai_model: str = "gpt-4o-mini"
     mongodb_uri: str = "mongodb://localhost:27017"
     mongodb_db_name: str = "company_scraper"
+    batch_size: int = 1
 
     model_config = SettingsConfigDict(env_file=(".env", "src/.env"), env_file_encoding="utf-8", extra="ignore")
 
