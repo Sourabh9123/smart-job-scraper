@@ -2,6 +2,10 @@ from pydantic import BaseModel, HttpUrl, Field
 from typing import List, Optional
 from datetime import datetime, timezone
 
+class SearchQueryOptimization(BaseModel):
+    optimized_query: str = Field(description="The optimized Google search query string designed to find companies hiring")
+
+
 class CompanyInfo(BaseModel):
     company: str = Field(description="Name of the company")
     website: str = Field(description="Official website URL")

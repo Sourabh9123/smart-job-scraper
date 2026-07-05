@@ -1,7 +1,7 @@
 import asyncio
 from openai import AsyncOpenAI
 from src.config import settings
-from src.models import CompanyInfo
+from src.models import CompanyInfo, SearchQueryOptimization
 from rich.console import Console
 
 console = Console()
@@ -83,3 +83,33 @@ async def extract_company_info(text: str, website: str) -> CompanyInfo | None:
         final_info = _merge_info(final_info, additional_info)
         
     return final_info
+
+async def optimize_search_query(user_query: str) -> str:
+    """
+    Uses OpenAI API to convert a user's natural language request into a highly optimized 
+    Google Search query (Dork) to find company websites and job listings.
+    """
+    prompt = f"""
+    The user wants to find software companies based on this query: '{user_query}'.
+    Transform this into a highly optimized Google search query that will maximize the chances 
+    of finding the target companies and their career/job pages. 
+    You may include relevant keywords like "careers", "hiring", or specific tech stacks.
+    Keep the query concise and effective for Google Search.
+    """
+    
+    try:
+        completion = await client.beta.chat.completions.parse(
+            model=settings.openai_model,
+            messages=[
+                {"role": "system", "content": "You are an expert SEO and Google Dork specialist."},
+                {"role": "user", "content": prompt},
+            ],
+            response_format=SearchQueryOptimization,
+            temperature=0.3
+        )
+        
+        return completion.choices[0].message.parsed.optimized_query
+        
+    except Exception as e:
+        console.print(f"[bold red]Error optimizing search query: {e}[/bold red]")
+        return user_query

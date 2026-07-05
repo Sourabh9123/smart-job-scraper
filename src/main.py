@@ -10,7 +10,7 @@ import tldextract
 from src.db import db
 from src.search import search_companies
 from src.scraper import scraper
-from src.llm import extract_company_info
+from src.llm import extract_company_info, optimize_search_query
 from src.models import CompanyDocument
 from src.utils import export_to_csv
 
@@ -80,10 +80,18 @@ async def main():
         console.print("[red]Query cannot be empty. Exiting.[/red]")
         sys.exit(1)
         
-    console.print(f"\n[bold green]Searching for:[/bold green] {query}\n")
+    console.print(f"\n[bold green]Original Query:[/bold green] {query}")
+    
+    with console.status("[bold magenta]AI is optimizing your search query...[/bold magenta]"):
+        optimized_query = await optimize_search_query(query)
+        
+    if optimized_query != query:
+        console.print(f"[bold green]AI Optimized Query:[/bold green] {optimized_query}\n")
+    else:
+        console.print("")
     
     with console.status("[bold cyan]Searching via Serper API...[/bold cyan]"):
-        results = await search_companies(query)
+        results = await search_companies(optimized_query)
         
     if not results:
         console.print("[yellow]No results found or error occurred during search.[/yellow]")
