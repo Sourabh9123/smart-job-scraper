@@ -29,30 +29,38 @@ async def main():
         iteration = 1
         try:
             while True:
-                console.rule(f"[bold cyan]Batch {iteration}[/bold cyan]")
+                from src.llm import optimize_search_query
+                from src.agent import search_web, scrape_and_extract
+                import re
                 
-                # Force the agent to try new angles each iteration
-                agent_input = f"User Request: '{query}'.\nThis is batch {iteration}. You MUST generate 2 COMPLETELY NEW search queries. Then search the web. Then immediately scrape up to {settings.batch_size} companies. Do NOT search more than once. Follow the 5-STEP sequence strictly."
+                # Step 1: Optimize Search Queries
+                console.print(f"[cyan]🤖 Agent is generating highly optimized search queries...[/cyan]")
+                queries = await optimize_search_query.ainvoke({"user_query": query})
                 
-                inputs = {"messages": [HumanMessage(content=agent_input)]}
+                # Step 2: Search the Web
+                console.print(f"[cyan]🤖 Agent is searching the web with queries: {queries}[/cyan]")
+                search_results = await search_web.ainvoke({"queries": queries})
                 
-                try:
-                    # Stream the agent's actions
-                    async for event in agent.astream(inputs, stream_mode="values"):
-                        message = event["messages"][-1]
-                        if message.type == "ai":
-                            if message.tool_calls:
-                                for tool_call in message.tool_calls:
-                                    console.print(f"[cyan]🤖 Agent decides to call tool: {tool_call['name']}[/cyan]")
-                            elif message.content:
-                                console.print(f"\n[bold magenta]🤖 Agent Final Report for Batch {iteration}:[/bold magenta]\n{message.content}")
-                        elif message.type == "tool":
-                            console.print(f"[green]✅ Tool {message.name} returned results.[/green]")
-                except Exception as e:
-                    if "GraphRecursionError" in str(type(e)) or "Recursion limit" in str(e):
-                        console.print("[yellow]Agent reached maximum steps (stubborn loop detected). Safely terminating this batch and moving to the next one![/yellow]")
+                if "CRITICAL INSTRUCTION" in search_results or "No new companies found" in search_results:
+                    console.print(f"\n[bold magenta]🤖 Agent Final Report for Batch {iteration}:[/bold magenta]\nNo new companies were found in this batch (all were duplicates).")
+                else:
+                    # Parse URLs from the search results
+                    links = re.findall(r"Link: (https?://[^\s]+)", search_results)
+                    unique_links = list(dict.fromkeys(links))[:settings.batch_size]
+                    
+                    if not unique_links:
+                        console.print(f"\n[bold magenta]🤖 Agent Final Report for Batch {iteration}:[/bold magenta]\nCould not extract any valid URLs to scrape.")
                     else:
-                        console.print(f"[red]Error during agent execution: {e}[/red]")
+                        # Step 3: Scrape and Extract
+                        console.print(f"[cyan]🤖 Agent is scraping and extracting data from {len(unique_links)} companies...[/cyan]")
+                        scrape_tasks = [
+                            scrape_and_extract.ainvoke({"url": link, "user_context": query})
+                            for link in unique_links
+                        ]
+                        scrape_results = await asyncio.gather(*scrape_tasks)
+                        
+                        report = "\n".join(scrape_results)
+                        console.print(f"\n[bold magenta]🤖 Agent Final Report for Batch {iteration}:[/bold magenta]\n{report}")
                         
                 iteration += 1
                 console.print(f"\n[dim]Batch {iteration-1} complete. Automatically starting next batch...[/dim]\n")
