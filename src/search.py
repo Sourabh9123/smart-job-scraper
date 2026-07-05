@@ -4,22 +4,28 @@ from typing import List, Dict, Any
 from src.config import settings
 from rich.console import Console
 
+import time
+
 console = Console()
 
-_serper_semaphore = None
+_rate_limit_lock = asyncio.Lock()
+_last_request_time = 0.0
 
 async def search_companies(query: str) -> List[Dict[str, Any]]:
     """
     Use Serper API to search for companies based on the query.
     Returns a list of search results.
     """
-    global _serper_semaphore
-    if _serper_semaphore is None:
-        _serper_semaphore = asyncio.Semaphore(4)
+    global _last_request_time
+    
+    async with _rate_limit_lock:
+        now = time.time()
+        elapsed = now - _last_request_time
+        if elapsed < 0.25:
+            await asyncio.sleep(0.25 - elapsed)
+        _last_request_time = time.time()
         
-    async with _serper_semaphore:
-        await asyncio.sleep(0.25) # Ensure we stay under 5 requests per second
-        url = "https://google.serper.dev/search"
+    url = "https://google.serper.dev/search"
     payload = {
         "q": query
     }
