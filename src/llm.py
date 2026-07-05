@@ -85,19 +85,31 @@ async def extract_company_info(text: str, website: str) -> CompanyInfo | None:
         
     return final_info
 
+_previously_generated_queries = set()
+
 @tool
 async def optimize_search_query(user_query: str) -> list[str]:
     """
     Uses OpenAI API to convert a user's natural language request into a highly optimized 
     Google Search query (Dork) to find company websites and job listings.
     """
+    global _previously_generated_queries
+    
+    # Format the previous queries nicely if any exist
+    previous_queries_str = "None"
+    if _previously_generated_queries:
+        previous_queries_str = "\n".join(f"- {q}" for q in _previously_generated_queries)
+
     prompt = f"""
     You are an expert Google search query optimizer specializing in discovering companies that are actively hiring.
 
     User Request:
     "{user_query}"
+    
+    PREVIOUSLY GENERATED QUERIES (DO NOT USE THESE OR ANYTHING SIMILAR):
+    {previous_queries_str}
 
-Generate 5 diverse, highly optimized Google search queries that maximize the chances of finding software companies and their hiring pages.
+Generate 5 diverse, highly optimized Google search queries that maximize the chances of finding software companies and their hiring pages. YOU MUST INVENT COMPLETELY NEW SEARCH ANGLES THAT DO NOT OVERLAP WITH THE PREVIOUSLY GENERATED QUERIES.
 
     To get a large volume of companies, create different angles for each query:
     1. Angle 1: Focus on startups and product companies.
@@ -189,7 +201,13 @@ Generate 5 diverse, highly optimized Google search queries that maximize the cha
             temperature=0.3
         )
         
-        return completion.choices[0].message.parsed.optimized_queries
+        queries = completion.choices[0].message.parsed.optimized_queries
+        
+        # Save them to the persistent global state
+        for q in queries:
+            _previously_generated_queries.add(q)
+            
+        return queries
         
     except Exception as e:
         console.print(f"[bold red]Error optimizing search query: {e}[/bold red]")
