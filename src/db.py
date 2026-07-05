@@ -29,6 +29,8 @@ class Database:
         Saves or updates a company document. Returns True if inserted/updated, False on error.
         Uses the website domain as the unique identifier to avoid duplicates.
         """
+        if self.collection is None:
+            return False
         domain = self.get_domain(company.website)
         doc = company.model_dump()
         doc['domain'] = domain
@@ -51,7 +53,7 @@ class Database:
 
     async def domain_exists(self, domain: str) -> bool:
         """Checks if a domain already exists in the main companies collection."""
-        if not self.collection:
+        if self.collection is None:
             return False
         count = await self.collection.count_documents({"domain": domain}, limit=1)
         return count > 0
