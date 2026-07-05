@@ -7,6 +7,7 @@ from src.agent import agent
 from langchain_core.messages import HumanMessage
 from src.utils import export_to_csv
 from src.models import CompanyDocument
+from src.config import settings
 
 console = Console()
 
