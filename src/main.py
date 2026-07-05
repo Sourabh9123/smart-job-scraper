@@ -26,6 +26,7 @@ async def main():
         console.print(f"\n[bold green]Dispatching AI Agent for:[/bold green] {query}\n")
         console.print("[dim]The agent will run continuously in batches. Press Ctrl+C at any time to stop and export.[/dim]\n")
         
+        original_query = query
         iteration = 1
         try:
             while True:
@@ -61,6 +62,13 @@ async def main():
                         
                         report = "\n".join(scrape_results)
                         console.print(f"\n[bold magenta]🤖 Agent Final Report for Batch {iteration}:[/bold magenta]\n{report}")
+                        
+                # Automatically pivot the strategy every 5 batches to cast a wider net and avoid duplicates
+                if iteration % 5 == 0:
+                    console.print(f"\n[bold yellow]🔄 Auto-Pivot: The current search strategy is getting stale. Pivoting to a new angle...[/bold yellow]")
+                    from src.llm import pivot_search_query
+                    query = await pivot_search_query(query, original_query)
+                    console.print(f"[bold green]New Core Strategy for upcoming batches:[/bold green] {query}")
                         
                 iteration += 1
                 console.print(f"\n[dim]Batch {iteration-1} complete. Automatically starting next batch...[/dim]\n")

@@ -225,3 +225,39 @@ async def optimize_search_query(user_query: str) -> list[str]:
     except Exception as e:
         console.print(f"[bold red]Error optimizing search query: {e}[/bold red]")
         return [user_query]
+
+async def pivot_search_query(current_query: str, original_query: str) -> str:
+    """
+    Mutates the core search request to expand the search net when the current angle is exhausted.
+    """
+    prompt = f"""
+    You are an expert lead generation strategist.
+    
+    The user originally asked for: "{original_query}"
+    The current active search strategy is: "{current_query}"
+    
+    We have exhausted this current strategy and are hitting database duplicates.
+    You MUST completely rewrite the strategy to cast a wider net while still respecting the spirit of the original request.
+    
+    Ideas to pivot:
+    - Shift to adjacent tech stacks (e.g. from React to Vue/Angular, Python to Go/Node).
+    - Target completely different cities/regions (if they asked for India, try specific tier-2 cities, or explicitly 'Remote Asia').
+    - Change the company archetype (e.g. from 'Startups' to 'Enterprise SaaS', 'Web3', or 'B2B Services').
+    
+    Return ONLY the new, natural language request. Do NOT include quotes, explanations, or search operators.
+    Example output: Find enterprise health-tech companies in Pune hiring backend developers.
+    """
+    try:
+        completion = await client.chat.completions.create(
+            model=settings.openai_model,
+            messages=[
+                {"role": "system", "content": "You are a creative strategist."},
+                {"role": "user", "content": prompt}
+            ],
+            temperature=0.7
+        )
+        new_query = completion.choices[0].message.content.strip('"\' ')
+        return new_query
+    except Exception as e:
+        console.print(f"[bold red]Error pivoting query: {e}[/bold red]")
+        return current_query
