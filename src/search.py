@@ -12,8 +12,7 @@ async def search_companies(query: str) -> List[Dict[str, Any]]:
     """
     url = "https://google.serper.dev/search"
     payload = {
-        "q": query,
-        "num": 20 # Fetching enough results
+        "q": query
     }
     headers = {
         'X-API-KEY': settings.serper_api_key,
@@ -28,6 +27,10 @@ async def search_companies(query: str) -> List[Dict[str, Any]]:
             
             # Extract organic results
             return data.get("organic", [])
+    except httpx.HTTPStatusError as e:
+        console.print(f"[bold red]HTTP Error calling Serper API: {e}[/bold red]")
+        console.print(f"[bold red]Response Details: {e.response.text}[/bold red]")
+        return []
     except Exception as e:
         console.print(f"[bold red]Error calling Serper API: {e}[/bold red]")
         return []
