@@ -6,31 +6,41 @@ from rich.console import Console
 
 import time
 
+import time
+
 console = Console()
 
 _rate_limit_lock = asyncio.Lock()
 _last_request_time = 0.0
+_serper_keys = [k.strip() for k in settings.serper_api_key.split(',') if k.strip()]
+_current_key_idx = 0
 
 async def search_companies(query: str) -> List[Dict[str, Any]]:
     """
     Use Serper API to search for companies based on the query.
     Returns a list of search results.
     """
-    global _last_request_time
+    global _last_request_time, _current_key_idx
     
     async with _rate_limit_lock:
         now = time.time()
         elapsed = now - _last_request_time
-        if elapsed < 0.25:
-            await asyncio.sleep(0.25 - elapsed)
+        # Delay is divided by number of keys to scale rate limit up!
+        delay = 0.25 / len(_serper_keys)
+        if elapsed < delay:
+            await asyncio.sleep(delay - elapsed)
         _last_request_time = time.time()
+        
+        # Round robin key selection
+        api_key = _serper_keys[_current_key_idx]
+        _current_key_idx = (_current_key_idx + 1) % len(_serper_keys)
         
     url = "https://google.serper.dev/search"
     payload = {
         "q": query
     }
     headers = {
-        'X-API-KEY': settings.serper_api_key,
+        'X-API-KEY': api_key,
         'Content-Type': 'application/json'
     }
 
