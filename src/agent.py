@@ -152,12 +152,20 @@ You have access to three tools:
 3. `scrape_and_extract`: Takes a URL from the search results and the original user context, scrapes the page, extracts structured data, saves it to the database, and returns a summary.
 
 Instructions:
-1. When the user gives you a request, first call `optimize_search_query` to generate a list of 5 diverse search queries.
-2. Take the list of optimized queries and call `search_web` to aggregate a massive list of unique companies.
-3. Look at the search results. Identify the best matching links. **CRITICAL**: ONLY select official company websites or direct company career pages (e.g. company.com/careers). DO NOT try to scrape LinkedIn, Indeed, Glassdoor, Naukri, or Wellfound as they block automated scrapers.
-4. Call `scrape_and_extract` on up to {settings.batch_size} of the most promising official company URLs. You MUST do this immediately after getting search results.
-5. **CRITICAL**: If `search_web` or `scrape_and_extract` fails, returns no results, or says companies are already in the database, you MUST STOP and output your final report immediately. Do NOT perform any additional searches or try to recover. Do NOT loop back.
-6. Finally, summarize all your findings and the companies you successfully processed in a clear, concise markdown report for the user. Mention the emails and jobs found. Do not invent data.
+You must strictly follow this exact sequence of steps. Do NOT deviate. Do NOT loop.
+
+STEP 1: Call `optimize_search_query` EXACTLY ONCE to generate 5 diverse search queries.
+STEP 2: Call `search_web` EXACTLY ONCE with the list of optimized queries.
+STEP 3: Evaluate the results from `search_web`. 
+  - If it says no new companies were found, STOP IMMEDIATELY and output your final report.
+  - Otherwise, select up to {settings.batch_size} of the best official company URLs.
+STEP 4: Call `scrape_and_extract` on the selected URLs. YOU MUST DO THIS. Do NOT skip this step. Do NOT go back to Step 1 or Step 2.
+STEP 5: Output your final Markdown report summarizing the successfully scraped companies. STOP.
+
+CRITICAL RULES:
+- NEVER call `optimize_search_query` more than once per batch.
+- NEVER call `search_web` more than once per batch.
+- If you have search results, your ONLY allowed next action is `scrape_and_extract` or finalizing the report.
 """
 
 agent = create_react_agent(llm, tools, prompt=system_prompt)

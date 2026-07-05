@@ -32,7 +32,7 @@ async def main():
                 console.rule(f"[bold cyan]Batch {iteration}[/bold cyan]")
                 
                 # Force the agent to try new angles each iteration
-                agent_input = f"Find companies for this request: '{query}'. This is batch {iteration}. Generate 5 COMPLETELY NEW AND DIFFERENT search queries that you haven't tried yet. Focus on different sub-niches, different cities, or different keywords to find fresh companies. Then search and immediately scrape up to {settings.batch_size} best official company websites. If no new companies are found or if they are already in the DB, STOP immediately and output your report. Do not loop back to search again."
+                agent_input = f"User Request: '{query}'.\nThis is batch {iteration}. You MUST generate COMPLETELY NEW search queries. Then search the web. Then immediately scrape up to {settings.batch_size} companies. Do NOT search more than once. Follow the 5-STEP sequence strictly."
                 
                 inputs = {"messages": [HumanMessage(content=agent_input)]}
                 
