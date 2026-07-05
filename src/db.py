@@ -43,6 +43,7 @@ class Database:
                 {"$set": doc},
                 upsert=True
             )
+            console.print(f"[bold green]💾 Successfully saved {company.company or domain} to database![/bold green]")
             return True
         except Exception as e:
             console.print(f"[bold red]Database error for {company.company}: {e}[/bold red]")
