@@ -16,32 +16,32 @@ async def main():
     # Initialize DB
     await db.init_db()
     
-    query = Prompt.ask("\n[bold yellow]Enter your request (e.g., 'Find me Python development companies in Bangalore actively hiring')[/bold yellow]")
-    
-    if not query:
-        console.print("[red]Query cannot be empty. Exiting.[/red]")
-        sys.exit(1)
+    while True:
+        query = Prompt.ask("\n[bold yellow]Enter your request (or type 'exit'/'quit' to stop)[/bold yellow]")
         
-    console.print(f"\n[bold green]Dispatching AI Agent for:[/bold green] {query}\n")
-    
-    inputs = {"messages": [HumanMessage(content=query)]}
-    
-    try:
-        # Stream the agent's actions
-        async for event in agent.astream(inputs, stream_mode="values"):
-            message = event["messages"][-1]
-            if message.type == "ai":
-                if message.tool_calls:
-                    for tool_call in message.tool_calls:
-                        console.print(f"[cyan]🤖 Agent decides to call tool: {tool_call['name']}[/cyan]")
-                elif message.content:
-                    console.print(f"\n[bold magenta]🤖 Agent Final Report:[/bold magenta]\n{message.content}")
-            elif message.type == "tool":
-                console.print(f"[green]✅ Tool {message.name} returned results.[/green]")
-    except KeyboardInterrupt:
-        console.print("\n[red]Process interrupted by user.[/red]")
-        sys.exit(0)
+        if not query or query.lower() in ['exit', 'quit']:
+            break
+            
+        console.print(f"\n[bold green]Dispatching AI Agent for:[/bold green] {query}\n")
         
+        inputs = {"messages": [HumanMessage(content=query)]}
+        
+        try:
+            # Stream the agent's actions
+            async for event in agent.astream(inputs, stream_mode="values"):
+                message = event["messages"][-1]
+                if message.type == "ai":
+                    if message.tool_calls:
+                        for tool_call in message.tool_calls:
+                            console.print(f"[cyan]🤖 Agent decides to call tool: {tool_call['name']}[/cyan]")
+                    elif message.content:
+                        console.print(f"\n[bold magenta]🤖 Agent Final Report:[/bold magenta]\n{message.content}")
+                elif message.type == "tool":
+                    console.print(f"[green]✅ Tool {message.name} returned results.[/green]")
+        except KeyboardInterrupt:
+            console.print("\n[yellow]Current search interrupted. You can start a new one.[/yellow]")
+            continue
+            
     export = Prompt.ask("\n[bold yellow]Do you want to export all scraped companies in the DB to CSV?[/bold yellow]", choices=["y", "n"], default="y")
     if export.lower() == "y":
         filename = Prompt.ask("[bold yellow]Enter filename[/bold yellow]", default="companies_export.csv")
@@ -55,9 +55,10 @@ async def main():
                 doc['source_id'] = str(doc['source_id'])
             docs.append(CompanyDocument(**doc))
         export_to_csv(docs, filename)
+        console.print(f"[green]Successfully exported {len(docs)} companies to {filename}![/green]")
 
 if __name__ == "__main__":
     try:
         asyncio.run(main())
     except KeyboardInterrupt:
-        pass
+        sys.exit(0)

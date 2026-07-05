@@ -71,6 +71,9 @@ async def search_web(queries: list[str]) -> str:
                     
     # Resolve job board company names to official domains concurrently
     if company_name_resolution_tasks:
+        # Limit to 20 resolutions per run to keep things fast and avoid giant batches
+        company_name_resolution_tasks = company_name_resolution_tasks[:20]
+        
         console.print(f"[cyan]Action:[/cyan] Resolving {len(company_name_resolution_tasks)} companies from job boards to their official websites...")
         resolution_results = await asyncio.gather(*[task for _, task in company_name_resolution_tasks])
         for (company_name, _), results in zip(company_name_resolution_tasks, resolution_results):
