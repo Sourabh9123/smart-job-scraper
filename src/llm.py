@@ -103,12 +103,12 @@ async def optimize_search_query(user_query: str) -> list[str]:
 
     strategies = [
         "Focus exclusively on specific sub-industries (e.g. Fintech, Edtech, Medtech, AI, Web3).",
-        "Focus on Tier-2 or Tier-3 cities instead of major tech hubs.",
         "Do NOT use site:linkedin.com or major job boards. Use negative operators (-linkedin -indeed -glassdoor) and look for organic 'careers' pages.",
         "Focus on obscure or senior job titles (e.g. 'Lead Architect', 'Backend Artisan', 'Staff Engineer').",
         "Focus on highly specific exact-match technology combinations (e.g. 'FastAPI + Celery + Redis', 'Django REST Framework + PostgreSQL').",
         "Target startup accelerators or funding rounds (e.g. 'Y Combinator', 'Series A', 'Seed funded').",
-        "Use advanced operators like `intitle:'careers'` or `inurl:'jobs'` combined with niche keywords."
+        "Use advanced operators like `intitle:'careers'` or `inurl:'jobs'` combined with niche keywords.",
+        "Focus on B2B, Enterprise software, or consulting agencies."
     ]
     random_strategy = random.choice(strategies)
 
@@ -127,82 +127,23 @@ async def optimize_search_query(user_query: str) -> list[str]:
     You are currently stuck generating the exact same queries by just shuffling words around. Google ignores word order, so this wastes searches!
     To break the loop, you MUST strictly apply the CRITICAL STRATEGY above to invent 2 COMPLETELY NOVEL Google search queries.
 
+    CRITICAL GEOGRAPHY RULE:
+    - You MUST KEEP the exact same geographic location (city/region/country) requested by the user. 
+    - If the user explicitly asks for "Kolkata" or "Sector V", your Google queries MUST contain those exact locations! Do not change the city!
+
     To get a large volume of companies, create different angles for each query:
     1. Angle 1: Focus on startups and product companies.
     2. Angle 2: Focus on specific technology stacks or hiring keywords.
 
-    The search should prioritize:
-
-    - Software companies matching the user's request.
-    - Companies actively hiring.
-    - Career pages.
-    - Job openings.
-    - Engineering teams.
-    - Startup companies.
-    - Product companies.
-    - Service companies.
-
-    Include search terms that help discover results from:
-
-    - Official company websites and career pages
-    - LinkedIn Company pages
-    - LinkedIn Jobs
-    - Indeed
-    - Naukri
-    - Wellfound (AngelList)
-    - "careers", "jobs", "hiring"
-
     You can use operators like `site:linkedin.com`, `site:indeed.com`, `site:naukri.com`, `site:wellfound.com`, or `site:glassdoor.com`. Our tool is smart enough to extract company names from job boards and find their official websites automatically!
 
-    If the user does NOT specify a location, automatically optimize for India by including relevant hiring locations such as:
-
-    India
-    Bangalore
-    Bengaluru
-    Hyderabad
-    Pune
-    Chennai
-    Mumbai
-    Delhi
-    Noida
-    Gurgaon
-    Gurugram
-    Kolkata
-    Ahmedabad
-    Jaipur
-    Remote India
-
-    If the user specifies a location, prioritize that instead.
-
-    If the user specifies technologies (Python, FastAPI, Django, AWS, AI, Backend, DevOps, etc.), include them naturally in the search.
-
-    Prefer keywords such as:
-
-    careers
-    jobs
-    hiring
-    openings
-    recruitment
-    software company
-    startup
-    product company
-    engineering
-    apply
-
-    Use advanced Google search operators whenever beneficial, including:
-    - inurl:careers
-    - intitle:hiring
-    - OR
-
     Rules:
-
     - Return exactly 2 distinct Google search queries.
     - Do NOT explain anything.
     - Do NOT use markdown.
     - Produce queries that are concise but comprehensive.
     - Optimize for discovering the maximum number of unique, relevant companies and active job opportunities.
     """
-        
     try:
         completion = await client.beta.chat.completions.parse(
             model=settings.openai_model,
