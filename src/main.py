@@ -23,24 +23,36 @@ async def main():
             break
             
         console.print(f"\n[bold green]Dispatching AI Agent for:[/bold green] {query}\n")
+        console.print("[dim]The agent will run continuously in batches. Press Ctrl+C at any time to stop and export.[/dim]\n")
         
-        inputs = {"messages": [HumanMessage(content=query)]}
-        
+        iteration = 1
         try:
-            # Stream the agent's actions
-            async for event in agent.astream(inputs, stream_mode="values"):
-                message = event["messages"][-1]
-                if message.type == "ai":
-                    if message.tool_calls:
-                        for tool_call in message.tool_calls:
-                            console.print(f"[cyan]🤖 Agent decides to call tool: {tool_call['name']}[/cyan]")
-                    elif message.content:
-                        console.print(f"\n[bold magenta]🤖 Agent Final Report:[/bold magenta]\n{message.content}")
-                elif message.type == "tool":
-                    console.print(f"[green]✅ Tool {message.name} returned results.[/green]")
+            while True:
+                console.rule(f"[bold cyan]Batch {iteration}[/bold cyan]")
+                
+                # Force the agent to try new angles each iteration
+                agent_input = f"Find companies for this request: '{query}'. This is batch {iteration}. Generate 5 COMPLETELY NEW AND DIFFERENT search queries that you haven't tried yet. Focus on different sub-niches, different cities, or different keywords to find fresh companies. Then search and scrape the 10 best official company websites."
+                
+                inputs = {"messages": [HumanMessage(content=agent_input)]}
+                
+                # Stream the agent's actions
+                async for event in agent.astream(inputs, stream_mode="values"):
+                    message = event["messages"][-1]
+                    if message.type == "ai":
+                        if message.tool_calls:
+                            for tool_call in message.tool_calls:
+                                console.print(f"[cyan]🤖 Agent decides to call tool: {tool_call['name']}[/cyan]")
+                        elif message.content:
+                            console.print(f"\n[bold magenta]🤖 Agent Final Report for Batch {iteration}:[/bold magenta]\n{message.content}")
+                    elif message.type == "tool":
+                        console.print(f"[green]✅ Tool {message.name} returned results.[/green]")
+                        
+                iteration += 1
+                console.print(f"\n[dim]Batch {iteration-1} complete. Automatically starting next batch...[/dim]\n")
+                await asyncio.sleep(2) # Brief pause between batches
+                
         except KeyboardInterrupt:
-            console.print("\n[yellow]Current search interrupted. You can start a new one.[/yellow]")
-            continue
+            console.print("\n[yellow]Continuous search interrupted. All data up to this point is securely saved in the database.[/yellow]")
             
     export = Prompt.ask("\n[bold yellow]Do you want to export all scraped companies in the DB to CSV?[/bold yellow]", choices=["y", "n"], default="y")
     if export.lower() == "y":
