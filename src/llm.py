@@ -1,5 +1,6 @@
 import asyncio
 from openai import AsyncOpenAI
+from langchain_core.tools import tool
 from src.config import settings
 from src.models import CompanyInfo, SearchQueryOptimization
 from rich.console import Console
@@ -84,19 +85,98 @@ async def extract_company_info(text: str, website: str) -> CompanyInfo | None:
         
     return final_info
 
+@tool
 async def optimize_search_query(user_query: str) -> str:
     """
     Uses OpenAI API to convert a user's natural language request into a highly optimized 
     Google Search query (Dork) to find company websites and job listings.
     """
     prompt = f"""
-    The user wants to find software companies based on this query: '{user_query}'.
-    Transform this into a highly optimized Google search query that will maximize the chances 
-    of finding the target companies and their career/job pages. 
-    You may include relevant keywords like "careers", "hiring", or specific tech stacks.
-    Keep the query concise and effective for Google Search.
+    You are an expert Google search query optimizer specializing in discovering companies that are actively hiring.
+
+    User Request:
+    "{user_query}"
+
+    Generate ONE highly optimized Google search query that maximizes the chances of finding software companies and their hiring pages.
+
+    The search should prioritize:
+
+    - Software companies matching the user's request.
+    - Companies actively hiring.
+    - Career pages.
+    - Job openings.
+    - Engineering teams.
+    - Startup companies.
+    - Product companies.
+    - Service companies.
+
+    Include search terms that help discover results from:
+
+    - Official company websites
+    - LinkedIn Company
+    - LinkedIn Jobs
+    - Indeed
+    - Naukri
+    - Wellfound (AngelList)
+    - Glassdoor
+    - Y Combinator startups (when relevant)
+    - Remote job boards (when relevant)
+
+    If the user does NOT specify a location, automatically optimize for India by including relevant hiring locations such as:
+
+    India
+    Bangalore
+    Bengaluru
+    Hyderabad
+    Pune
+    Chennai
+    Mumbai
+    Delhi
+    Noida
+    Gurgaon
+    Gurugram
+    Kolkata
+    Ahmedabad
+    Jaipur
+    Remote India
+
+    If the user specifies a location, prioritize that instead.
+
+    If the user specifies technologies (Python, FastAPI, Django, AWS, AI, Backend, DevOps, etc.), include them naturally in the search.
+
+    Prefer keywords such as:
+
+    careers
+    jobs
+    hiring
+    openings
+    recruitment
+    software company
+    startup
+    product company
+    engineering
+    apply
+
+    Use advanced Google search operators whenever beneficial, including:
+
+    site:linkedin.com/company
+    site:linkedin.com/jobs
+    site:indeed.com
+    site:naukri.com
+    site:wellfound.com
+    site:glassdoor.com
+    site:careers
+    OR
+
+    Rules:
+
+    - Return ONLY the Google search query.
+    - Do NOT explain anything.
+    - Do NOT use markdown.
+    - Produce a query that is concise but comprehensive.
+    - Optimize for discovering the maximum number of relevant companies and active job opportunities.
     """
-    
+        
     try:
         completion = await client.beta.chat.completions.parse(
             model=settings.openai_model,
