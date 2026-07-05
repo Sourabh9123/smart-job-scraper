@@ -120,13 +120,28 @@ async def scrape_and_extract(url: str, user_context: str) -> str:
     scraped_text = await scraper.crawl_company(url)
     
     if not scraped_text:
-        return f"Failed to extract any text from {url}"
+        doc = CompanyDocument(
+            company=None,
+            website=url,
+            description="Failed to scrape text (Anti-bot or timeout)",
+            search_query=user_context
+        )
+        await db.save_company(doc)
+        return f"Failed to extract any text from {url}. (Domain marked in DB to prevent retries)"
         
     source_id = await db.save_raw_scrape(url, scraped_text)
     company_info = await extract_company_info(scraped_text, url)
     
     if not company_info:
-        return f"Failed to extract structured data from {url}"
+        doc = CompanyDocument(
+            company=None,
+            website=url,
+            description="Failed to extract structured data via LLM",
+            search_query=user_context,
+            source_id=source_id
+        )
+        await db.save_company(doc)
+        return f"Failed to extract structured data from {url}. (Domain marked in DB to prevent retries)"
         
     doc = CompanyDocument(
         **company_info.model_dump(),
