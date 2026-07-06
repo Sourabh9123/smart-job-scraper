@@ -21,7 +21,8 @@ async def main():
         console.print("\n[bold cyan]Select Discovery Mode:[/bold cyan]")
         console.print("1. Standard Discovery (LLM Agent -> Google Search -> Scrape)")
         console.print("2. OSM Pipeline (OpenStreetMap -> Database -> Google Search -> Scrape)")
-        mode = Prompt.ask("\n[bold yellow]Enter mode (1 or 2, or 'exit' to stop)[/bold yellow]")
+        
+        mode = Prompt.ask("\n[bold yellow]Enter mode[/bold yellow]", choices=["1", "2", "exit", "quit"], default="1")
         
         if mode.lower() in ['exit', 'quit']:
             break
