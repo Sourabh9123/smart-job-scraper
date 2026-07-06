@@ -14,10 +14,13 @@ class Database:
         self.db = self.client[settings.mongodb_db_name]
         self.collection = self.db.companies
         self.raw_collection = self.db.raw_scrapes
+        self.osm_collection = self.db.osm_companies
 
     async def init_db(self):
         # Create a unique index on the domain
         await self.collection.create_index("domain", unique=True)
+        # Create unique index on osm_id to prevent duplicates
+        await self.osm_collection.create_index("osm_id", unique=True)
 
     @staticmethod
     def get_domain(url: str) -> str:
@@ -50,6 +53,32 @@ class Database:
         except Exception as e:
             console.print(f"[bold red]Database error for {company.company}: {e}[/bold red]")
             return False
+
+    async def save_osm_company(self, osm_company) -> bool:
+        """Saves a company found via OSM to the database."""
+        if self.osm_collection is None:
+            return False
+        doc = osm_company.model_dump()
+        try:
+            await self.osm_collection.update_one(
+                {"osm_id": doc["osm_id"]},
+                {"$set": doc},
+                upsert=True
+            )
+            return True
+        except Exception:
+            return False
+
+    async def get_unprocessed_osm_companies(self, limit: int = 5):
+        """Gets companies from OSM that haven't been scraped yet."""
+        if self.osm_collection is None:
+            return []
+        cursor = self.osm_collection.find({"processed": False}).limit(limit)
+        return await cursor.to_list(length=limit)
+        
+    async def mark_osm_processed(self, osm_id: int):
+        if self.osm_collection is not None:
+            await self.osm_collection.update_one({"osm_id": osm_id}, {"$set": {"processed": True}})
 
     async def domain_exists(self, domain: str) -> bool:
         """Checks if a domain already exists in the main companies collection."""
