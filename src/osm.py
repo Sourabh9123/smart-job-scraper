@@ -1,9 +1,11 @@
 import time
 import requests
 from typing import List, Dict, Any, Tuple
-from loguru import logger
+from rich.console import Console
 from pydantic import BaseModel, Field
 from typing import Optional
+
+console = Console()
 
 class OSMCompany(BaseModel):
     name: Optional[str] = None
@@ -59,13 +61,17 @@ class OSMClient:
             try:
                 response = requests.post(self.api_url, data={"data": query}, headers=self.headers, timeout=self.timeout)
                 if response.status_code == 200:
-                    return response.json().get("elements", [])
+                    elements = response.json().get("elements", [])
+                    return elements
                 if response.status_code == 429:
+                    console.print("[yellow]OSM Rate limit hit (429).[/yellow]")
                     raise OverpassRateLimitError("Rate limit exceeded.")
                 if response.status_code in [500, 502, 503]:
+                    console.print(f"[yellow]OSM Server error {response.status_code}. Retrying...[/yellow]")
                     raise OverpassAPIError(f"Server error: {response.status_code}")
                 response.raise_for_status()
             except (requests.exceptions.Timeout, OverpassTimeoutError) as e:
+                console.print("[red]OSM Request timed out.[/red]")
                 if retries == self.max_retries: raise OverpassTimeoutError("Timeout") from e
             except Exception as e:
                 if retries == self.max_retries: raise OverpassAPIError(f"Failed: {e}") from e
