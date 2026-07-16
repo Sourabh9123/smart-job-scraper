@@ -88,6 +88,8 @@ The AI generates 5 diverse search strategies based on your input. Try these to g
 - **For High-Quality Startups:** 
   > *"Find me Y-Combinator startups, early-stage SaaS companies, and AI product companies in India that are expanding their engineering teams."*
 
+
+
 ## 🐳 Docker Support
 
 Run the entire application in a containerized environment:
